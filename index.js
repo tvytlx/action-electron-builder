@@ -84,7 +84,7 @@ const runAction = () => {
 
 	// Determine whether NPM should be used to run commands (instead of Yarn, which is the default)
 	const useNpm = existsSync(pkgLockPath);
-	const pm = (getInput("pacakge_manager") || "").toLowerCase();
+	const pm = (getInput("package_manager") || "").toLowerCase();
 	const packageManager = ["npm", "yarn", "pnpm"].includes(pm) ? pm : useNpm ? "npm" : "yarn";
 	log(`Will run ${packageManager} commands in directory "${pkgRoot}"`);
 
