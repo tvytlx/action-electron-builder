@@ -84,7 +84,9 @@ const runAction = () => {
 
 	// Determine whether NPM should be used to run commands (instead of Yarn, which is the default)
 	const useNpm = existsSync(pkgLockPath);
-	log(`Will run ${useNpm ? "NPM" : "Yarn"} commands in directory "${pkgRoot}"`);
+	const pm = (getInput("pacakge_manager") || "").toLowerCase();
+	const packageManager = ["npm", "yarn", "pnpm"].includes(pm) ? pm : useNpm ? "npm" : "yarn";
+	log(`Will run ${packageManager} commands in directory "${pkgRoot}"`);
 
 	// Make sure `package.json` file exists
 	if (!existsSync(pkgJsonPath)) {
@@ -109,8 +111,8 @@ const runAction = () => {
 	if (skipInstall) {
 		log("Skipping install script because `skip_install` option is set");
 	} else {
-		log(`Installing dependencies using ${useNpm ? "NPM" : "Yarn"}…`);
-		run(useNpm ? "npm install" : "yarn", pkgRoot);
+		log(`Installing dependencies using ${packageManager}…`);
+		run(useNpm ? "npm install" : packageManager, pkgRoot);
 	}
 
 	// Run NPM build script if it exists
@@ -125,7 +127,7 @@ const runAction = () => {
 			// https://github.com/yarnpkg/yarn/issues/6894
 			const pkgJson = JSON.parse(readFileSync(pkgJsonPath, "utf8"));
 			if (pkgJson.scripts && pkgJson.scripts[buildScriptName]) {
-				run(`yarn run ${buildScriptName}`, pkgRoot);
+				run(`${packageManager} run ${buildScriptName}`, pkgRoot);
 			}
 		}
 	}
@@ -135,7 +137,7 @@ const runAction = () => {
 	for (let i = 0; i < maxAttempts; i += 1) {
 		try {
 			run(
-				`${useNpm ? "npx --no-install" : "yarn run"} ${cmd} --${platform} ${
+				`${"npx --no-install"} ${cmd} --${platform} ${
 					release ? "--publish always" : ""
 				} ${args}`,
 				appRoot,
